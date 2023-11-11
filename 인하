@@ -1,1 +1,203 @@
 
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#pragma warning(disable:4996)
+
+int bomb_max = 3;
+int bomb_len = 3;
+int GameOver = 0;
+clock_t cur_time;
+char mapModel[9][9] =
+{
+    {1, 0, 1, 0, 0, 0, 1, 0, 1},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 1, 0, 0, 0, 1, 0, 1},
+
+    {0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 2, 3, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    {1, 0, 1, 0, 0, 0, 1, 0, 1},
+    {0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 1, 0, 0, 0, 1, 0, 1} };
+
+typedef struct Bomb { //단일연결리스트 구조체
+    struct Bomb* next;
+    clock_t start_time; //생성시 게임 시간
+    //float time;
+    int x;
+    int y;
+}Bomb;
+
+Bomb* bomb;
+void TimeCheck();
+Bomb* getBombNode(int x, int y);
+void insertitem(Bomb* w);
+void PrintBomb();
+void ProcessKeyInput();
+void ﻿BombSwich_On(int x, int y);
+
+Bomb* getBombNode(int x, int y) {
+    Bomb* newbomb = (Bomb*)malloc(sizeof(Bomb));
+    newbomb->next = NULL;
+    newbomb->start_time = clock(); // 현재 시간으로 초기화
+    //newbomb->time = 0;
+    newbomb->x = x;
+    newbomb->y = y;
+    return newbomb;
+}
+
+void insertitem(Bomb* w) {
+    if (bomb->next == NULL) {
+        bomb->next = w;
+        return;
+    }
+    Bomb* curBomb = bomb->next;
+    while (curBomb->next != NULL) {
+        //if (curBomb->x == w->x && curBomb->y == w->y) return //이미 물풍선이 있는 곳에 또 물풍선을 놓으려고 하면 리턴
+        curBomb = curBomb->next;
+    }
+    curBomb->next = w;
+    mapModel[w->y][w->x] = 400; //물풍선 놓기.
+}
+
+void PrintBomb() { //폭탄 배열 위치 출력하기
+    if (bomb->next == NULL) return;
+    Bomb* curBomb = bomb->next;
+    while (curBomb != NULL) {
+        printf("%d %d\n", curBomb->x, curBomb->y);
+        curBomb = curBomb->next;
+    }
+}
+
+void ProcessKeyInput() {
+    int i = 0, key = 0;
+    for (i = 0; i < 30; i++) {
+        if (_kbhit() != 0) {
+            key = _getch();
+            switch (key) {
+            case 'q': { //물풍선 설치키
+                //x, y키에 대해선 수정이 필요함. to 준형이에게
+                int x = rand() % 8; //플레이어의 위치를 일단 임의로 받아옴. 
+                int y = rand() % 8; //실제 코드에서는 GetCurrentCursorPos를 사용하여 x,y값을 지정할 것.
+                Bomb* newbomb = getBombNode(x, y); //x, y좌표의 새 폭탄 얻어옴.
+                insertitem(newbomb);
+            }
+                    break;
+            case 'p': //현재 물풍선들의 좌표 출력
+                PrintBomb();
+                break;
+            }
+        }
+        Sleep(10);
+    }
+    //TimeCheck();
+}
+
+void ﻿BombSwich_On(int x, int y) {
+    if (bomb->next == NULL) return;
+    Bomb* curBomb = bomb->next;
+    Bomb* PBpmb = curBomb;
+    while (curBomb != NULL) {
+        if (curBomb->next->x == x && curBomb->next->y == y) {
+            PBpmb = curBomb;
+        }
+        curBomb = curBomb->next;
+    }
+
+    Bomb* temp = PBpmb->next;
+    mapModel[temp->y][temp->x] == 0; //맵 정보 수정. 물풍선 있던 자리에 아무것도 출력하지 않음.
+    PBpmb->next = PBpmb->next->next;
+    free(temp);
+    printf("%d %d BOMB!!!\n", x, y);
+
+    for (int i = -bomb_len; i <= bomb_len; i++) { //폭탄이 터지는 범위 훑기
+        if (i == 0) continue;
+        int m = i + y;
+        int n = i + x;
+
+        //세로줄 확인
+        if (m < 0 || 8 < m) continue; //맵밖으로 벗어나면 continue
+        if (mapModel[m][x] == 1) { //나무 상자라면
+            mapModel[m][x] == 0; //나무 상자 파괴
+            //여기에 아이템 랜덤 드랍 함수. to 경빈이에게
+        }
+        if (mapModel[m][x] == 111 || mapModel[m][x] == 222 || mapModel[m][x] == 333){ //아이템이 있다면
+            mapModel[m][x] == 0; //아이템 파괴
+        }
+        else if (mapModel[m][x] == 2) { //2가 플레이어라고 가정. 만약 플레이어라면
+            GameOver = 1; //게임 오버.
+            //게임 오버 함수가 있다면 호출. to 경빈이에게
+        }
+        else if (mapModel[m][x] == 3) { //3이 적이라고 가정. 만약 적이라면
+            printf("next stage!");
+            //다음 스테이지 함수 호출. to 경빈이에게
+        }
+        else if (mapModel[m][x] == 400) { //만약 다른 폭탄이 있다면
+            ﻿BombSwich_On(x, m); //재귀호출
+        }
+
+        //가로줄 확인
+        if (n < 0 || 8 < n) continue; //맵밖으로 벗어나면 continue
+        if (mapModel[y][n] == 1) { //나무 상자라면
+            mapModel[y][n] == 0; //나무 상자 파괴
+            //여기에 아이템 랜덤 드랍 함수. to 경빈이에게
+        }
+        if (mapModel[y][n] == 111 || mapModel[y][n] == 222 || mapModel[y][n] == 333) { //아이템이 있다면
+            mapModel[y][n] == 0; //아이템 파괴
+        }
+        else if (mapModel[y][n] == 2) { //2가 플레이어라고 가정. 만약 플레이어라면
+            GameOver = 1; //게임 오버.
+            printf("GameOver");
+            //게임 오버 함수가 있다면 호출. to 경빈이에게
+        }
+        else if (mapModel[y][n] == 3) { //3이 적이라고 가정. 만약 적이라면
+            printf("next stage!");
+            //다음 스테이지 함수 호출. to 경빈이에게
+        }
+        else if (mapModel[y][n] == 400) { //만약 다른 폭탄이 있다면
+            ﻿BombSwich_On(n, y); //재귀호출
+        }
+    }
+
+}
+
+void TimeCheck() {
+    if (bomb->next == NULL) return;
+    Bomb* curBomb = bomb->next;
+    while (curBomb != NULL) {
+        clock_t curtime = clock();
+        if (curtime - curBomb->start_time >= 3000) { //3초가 지났으면 물풍선 폭파
+            ﻿BombSwich_On(curBomb->x, curBomb->y);
+            //여기에 맵 다시 그려야함. to 경빈이에게
+            break;
+        }
+        curBomb = curBomb->next;
+    }
+}
+
+int main() {
+    srand((unsigned)time(NULL));
+    clock_t start_time = clock(); // 프로그램 시작 시간 저장
+    clock_t delay = 3 * CLOCKS_PER_SEC; // 3초를 클럭 틱으로 변환
+
+    bomb = (Bomb*)malloc(sizeof(Bomb)); //플레이어 폭탄 연결리스트
+    bomb->next = NULL;
+    bomb->start_time = start_time;
+   // bomb->time = 0;
+    bomb->x = 0;
+    bomb->y = 0;
+
+    char x;
+   
+    while (1) {
+        ProcessKeyInput();
+        //TimeCheck();
+    }
+  /*  while (clock() < start_time + delay) {
+        // 기다리는 동안 아무 작업도 하지 않음
+    }*/
+    printf("GameOver");
+    return 0;
+}
