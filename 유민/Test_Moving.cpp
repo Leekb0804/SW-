@@ -8,89 +8,97 @@
 #include "block_model.h"
 #include "calculatorDST.h"
 
+int npcCurPosX, npcCurPosY;
+clock_t NPC_current_Time;
+#define flagTime 1.5
+
+void SetNpcPos() {
+
+	npcCurPosX = 2;
+	npcCurPosY = 8;
+
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+
+	ShowNpcBlock();
+}
+
+void block_break() {
+	
+
+	SetCurrentCursorPos(npcCurPosX + 2, npcCurPosY);
+	printf("  ");
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+
+	SetCurrentCursorPos(npcCurPosX - 2, npcCurPosY);
+	printf("  ");
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY + 1);
+	printf("  ");
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY - 1);
+	printf("  ");
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+}
+
 void ShowDstBlock(int x, int y) {
 	COORD curPos = GetCurrentCursorPos();
-
 	SetCurrentCursorPos(x * 2, y);
 	printf("☆");
 	SetCurrentCursorPos(curPos.X, curPos.Y);
-}
+} // 지금은 안씀
 
-void ShowBlock()
+void ShowNpcBlock()
 {
-	COORD curPos = GetCurrentCursorPos();
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
 	printf("★");
-	SetCurrentCursorPos(curPos.X, curPos.Y);
 }
 
 void DeleteBlock()
 {
-	COORD curPos = GetCurrentCursorPos();
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
+
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
 	printf("  ");
-	SetCurrentCursorPos(curPos.X, curPos.Y);
 }
 
-int ShiftLeft() {
+int NPC_moveLeft() {
 
-	COORD curPos = GetCurrentCursorPos();
-
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
-	
 	DeleteBlock();
-	curPosX -= 2;
-	SetCurrentCursorPos(curPosX, curPosY);
-	ShowBlock();
+	npcCurPosX -= 2;
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+	ShowNpcBlock();
 	return 0;
 	
 }
 
-int ShiftRight() {
+int NPC_moveRight() {
 
-	COORD curPos = GetCurrentCursorPos();
-
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
-	
 	DeleteBlock();
-	curPosX += 2;
-	SetCurrentCursorPos(curPosX, curPosY);
-	ShowBlock();
+	npcCurPosX += 2;
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+	ShowNpcBlock();
 
 	return 0;
 
 }
 
-int BlockUp() {
+int NPC_moveUp() {
 	
-	COORD curPos = GetCurrentCursorPos();
-
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
-
 	DeleteBlock();
-	curPosY -= 1;
-	SetCurrentCursorPos(curPosX, curPosY);
-	ShowBlock();
+	npcCurPosY -= 1;
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+	ShowNpcBlock();
 
 	return 0;
 }
 
-int BlockDown() {
-
-	COORD curPos = GetCurrentCursorPos();
-
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
+int NPC_moveDown() {
 
 	DeleteBlock();
-	curPosY += 1;
-	SetCurrentCursorPos(curPosX, curPosY);
-	ShowBlock();
+	npcCurPosY += 1;
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+	ShowNpcBlock();
 
 	return 0;
 }
@@ -99,74 +107,78 @@ int FindDstX() {
 	srand((unsigned int)time(NULL));
 	int x = rand() % 9;
 	return x;
-}
+}// 지금은 안씀
 int FindDstY() {
 	srand((unsigned int)time(NULL));
 	int y = rand() % 9;
 	return y;
-}
+}// 지금은 안씀
 
-int NpcMoving() {
+int NpcMoving(clock_t current_game_time) {
 
-	COORD curPos = GetCurrentCursorPos();
-
-	int curPosX = curPos.X;
-	int curPosY = curPos.Y;
-
-	int dstX, dstY;
 	int npcX, npcY;
 
-	while (1) {
-		dstX = FindDstX();
-		dstY = FindDstY();
-		if (mapModel[dstY][dstX] == 1) {
-			continue;
-		}
-		else {
-			break;
-		}
-	}
+	npcX = npcCurPosX / 2;
+	npcY = npcCurPosY;
 
-	ShowDstBlock(dstX, dstY);
+	int dist = ShortestDistance(npcX, npcY);
 
-	npcX = curPosX / 2;
-	npcY = curPosY;
-
-	int dist = ShortestDistance(npcX, npcY, dstX, dstY);
 	int dx = npcX;
 	int dy = npcY;
 
-	SetCurrentCursorPos(curPosX, curPosY);
+	SetCurrentCursorPos(npcCurPosX, npcCurPosY);
+
+
+	NPC_current_Time = clock();
 
 	while (1) {
 		if (one_srt_dist[dy][dx + 1] == 1) {
 			one_srt_dist[dy][dx] = 0;
-			ShiftRight();
+
+			if (NPC_current_Time - current_game_time > flagTime) {
+				current_game_time = NPC_current_Time;
+				NPC_moveRight();
+			}
 			dx += 1;
-			Sleep(200);
 		}
 		if (one_srt_dist[dy][dx - 1] == 1) {
 			one_srt_dist[dy][dx] = 0;
-			ShiftLeft();
+
+			if (NPC_current_Time - current_game_time > flagTime) {
+				current_game_time = NPC_current_Time;
+				NPC_moveLeft();
+			}
 			dx -= 1;
-			Sleep(200);
 		}
 		if (one_srt_dist[dy + 1][dx] == 1) {
 			one_srt_dist[dy][dx] = 0;
-			BlockDown();
+
+			if (NPC_current_Time - current_game_time > flagTime) {
+				current_game_time = NPC_current_Time;
+				NPC_moveDown();
+			}
 			dy += 1;
-			Sleep(200);
 		}
 		if (one_srt_dist[dy - 1][dx] == 1) {
 			one_srt_dist[dy][dx] = 0;
-			BlockUp();
+
+			if (NPC_current_Time - current_game_time > flagTime) {
+				current_game_time = NPC_current_Time;
+				NPC_moveUp();
+			}
 			dy -= 1;
-			Sleep(200);
 		}
 		if (dx == dstX && dy == dstY) {
+			mapModel[dstY + 1][dstX] = 0;
+			mapModel[dstY - 1][dstX] = 0;
+			mapModel[dstY][dstX + 1] = 0;
+			mapModel[dstY][dstX - 1] = 0;
+			SetCurrentCursorPos(dx * 2, dy);
+			current_game_time = NPC_current_Time;
+			block_break();
 			break;
 		}
-	}
 
-	return 0;
+		return 0;
+	}
 }
