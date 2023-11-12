@@ -121,7 +121,7 @@ int NpcMoving(clock_t current_game_time) {
 	npcX = npcCurPosX / 2;
 	npcY = npcCurPosY;
 
-	int dist = ShortestDistance(npcX, npcY);
+	int dist = ShortestDistance(npcX, npcY); // 여기서 one_srt_dist 배열을 만들어줌 (이 배열을 보고 NPC가 움직임)
 
 	int dx = npcX;
 	int dy = npcY;
@@ -132,12 +132,12 @@ int NpcMoving(clock_t current_game_time) {
 	NPC_current_Time = clock();
 
 	while (1) {
-		if (one_srt_dist[dy][dx + 1] == 1) {
-			one_srt_dist[dy][dx] = 0;
+		if (one_srt_dist[dy][dx + 1] == 1) { // NPC 현재위치 기준 one_srt_dist의 오른쪽이 1이라면 (갈수있는길)
+			one_srt_dist[dy][dx] = 0; // 현재 위치의 one_srt_dist를 0으로 초기화 하고
 
 			if (NPC_current_Time - current_game_time > flagTime) {
 				current_game_time = NPC_current_Time;
-				NPC_moveRight();
+				NPC_moveRight(); //오른쪽으로 이동
 			}
 			dx += 1;
 		}
@@ -168,7 +168,7 @@ int NpcMoving(clock_t current_game_time) {
 			}
 			dy -= 1;
 		}
-		if (dx == dstX && dy == dstY) {
+		if (dx == dstX && dy == dstY) { // 목표 위치에 도착하면 mapModel의 상하좌우를 1로 초기화 하고 블럭을 지워줌 (임시 물풍선)
 			mapModel[dstY + 1][dstX] = 0;
 			mapModel[dstY - 1][dstX] = 0;
 			mapModel[dstY][dstX + 1] = 0;
