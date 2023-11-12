@@ -68,11 +68,11 @@ void bfs(Queue* q, int x, int y) {
 					visited[ny][nx] = 1;
 					weight[ny][nx] = q[rear].dist;
 
-					if (nx * 2 == PlayerCurPosX && ny == PlayerCurPosY) {
+					if (nx * 2 == PlayerCurPosX && ny == PlayerCurPosY) { // 만약 탐색중에 플레이어 위치를 발견하면
 						kill_Mode = 1;
 					}
 
-					if (kill_Mode == 0) {
+					if (kill_Mode == 0) { // 아직 플레이어 위치를 못찾았다면
 
 						int cnt = 0;
 						for (int j = 0; j < 4; j++) {
@@ -92,13 +92,13 @@ void bfs(Queue* q, int x, int y) {
 								cnt++;
 							}
 						}
-						if (cnt > can_Pos) {
+						if (cnt > can_Pos) { // 목표 위치를 현재 NPC위치에서 가장 많은 블럭을 부술 수 있는 위치로 설정함
 							can_Pos = cnt;
 							dstX = nx;
 							dstY = ny;
 						}
 					}
-					else if (kill_Mode == 1) {
+					else if (kill_Mode == 1) { // kill_Mode 가 1이면 플레이어만 쫓아다님
 						dstX = PlayerCurPosX / 2;
 						dstY = PlayerCurPosY;
 					}
