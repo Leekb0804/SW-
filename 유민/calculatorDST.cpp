@@ -8,6 +8,7 @@
 #include "calculatorDST.h"
 #include "LeeGB_cursor.h"
 #include "Test_Moving.h"
+#include "Player_KJH.h"
 
 int one_srt_dist[101][101];
 int dstX, dstY;
@@ -23,6 +24,7 @@ int wx[4] = { 0,1,0,-1 };
 int wy[4] = { 1,0,-1,0 };
 
 int can_Pos = 0;
+int kill_Mode = 0;
 
 void dfs(int dstX, int dstY, int npcX, int npcY) {
 
@@ -66,28 +68,39 @@ void bfs(Queue* q, int x, int y) {
 					visited[ny][nx] = 1;
 					weight[ny][nx] = q[rear].dist;
 
-					int cnt = 0;
-					for (int j = 0; j < 4; j++) {
-						if (nx + wx[j] < 0) {
-							continue;
+					if (nx * 2 == PlayerCurPosX && ny == PlayerCurPosY) {
+						kill_Mode = 1;
+					}
+
+					if (kill_Mode == 0) {
+
+						int cnt = 0;
+						for (int j = 0; j < 4; j++) {
+							if (nx + wx[j] < 0) {
+								continue;
+							}
+							if (nx + wx[j] >= WIDTH) {
+								continue;
+							}
+							if (ny + wy[j] < 0) {
+								continue;
+							}
+							if (ny + wy[j] >= HEIGHT) {
+								continue;
+							}
+							if (mapModel[ny + wy[j]][nx + wx[j]] == 1) {
+								cnt++;
+							}
 						}
-						if (nx + wx[j] >= WIDTH) {
-							continue;
-						}
-						if (ny + wy[j] < 0) {
-							continue;
-						}
-						if (ny + wy[j] >= HEIGHT) {
-							continue;
-						}
-						if (mapModel[ny + wy[j]][nx + wx[j]] == 1) {
-							cnt++;
+						if (cnt > can_Pos) {
+							can_Pos = cnt;
+							dstX = nx;
+							dstY = ny;
 						}
 					}
-					if (cnt > can_Pos) {
-						can_Pos = cnt;
-						dstX = nx;
-						dstY = ny;
+					else if (kill_Mode == 1) {
+						dstX = PlayerCurPosX / 2;
+						dstY = PlayerCurPosY;
 					}
 				}
 			}
@@ -109,14 +122,13 @@ int ShortestDistance(int npcX, int npcY) {
 	front = rear = 0;
 	can_Pos = 0;
 	weight[npcY][npcX] = 0;
-	//printf("\n\n[%d %d]", npcX, npcY);
+
 	bfs(q, npcX, npcY); // 여기에 NPC의 출발(x,y)좌표를 집어넣는다.
 
 	weight[npcY][npcX] = 1;
 	int dist = q[rear].dist;
 	free(q);
 
-	//printf("%d",flag);
 	dfs(dstX, dstY, npcX, npcY);
 
 	for (int i = 0; i < WIDTH; i++) {
