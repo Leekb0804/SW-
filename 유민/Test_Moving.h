@@ -15,7 +15,7 @@ int NPC_moveRight(); // NPC 우측 이동
 int NPC_moveUp(); // NPC 상단 이동
 int NPC_moveDown(); // NPC 하단 이동
 int NpcMoving(clock_t current_game_time); // NPC 이동함수, 여기서 shortestDistance 함수 호출해서 one_srt_dist 배열을 만든다
-void SetNpcPos(); // 첫 NPC 위치 
+void SetNpcPos(); // 첫 NPC 위치 설정
 
 
 #endif
