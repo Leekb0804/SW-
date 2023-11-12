@@ -4,13 +4,18 @@
 #include <windows.h>
 #include "calculatorDST.h"
 
-void ShowBlock();
+extern int npcCurPosX, npcCurPosY;
+extern clock_t NPC_current_Time;
+
+
+void ShowNpcBlock();
 void DeleteBlock();
-int ShiftLeft();
-int ShiftRight();
-int BlockUp();
-int BlockDown();
-int NpcMoving();
+int NPC_moveLeft();
+int NPC_moveRight();
+int NPC_moveUp();
+int NPC_moveDown();
+int NpcMoving(clock_t current_game_time);
+void SetNpcPos();
 
 
 #endif
