@@ -1,0 +1,11 @@
+typedef struct BOOM {
+    struct BOOM* next;
+    struct BOOM* prev;
+    unsigned long long start_time;
+    int x;
+    int y;
+}BOOM;
+
+typedef struct BOOMHead {
+    struct BOOM* next;
+} BOOMHead;
