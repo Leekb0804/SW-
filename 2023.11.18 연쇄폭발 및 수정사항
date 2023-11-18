@@ -1,0 +1,390 @@
+///bomb.h 수정사항
+
+#ifndef __BOMB_H__
+#define __BOMB_H__
+
+
+typedef struct Bomb { //이중연결리스트 구조체
+    struct Bomb* next;
+    struct Bomb* prev;
+    unsigned long long start_time; //생성시 게임 시간
+    //float time;
+    int x;
+    int y;
+    int len;
+}Bomb;
+
+typedef struct BombHead {
+    struct Bomb* next;
+} BombHead;
+
+typedef struct BOOM {
+    struct BOOM* next;
+    struct BOOM* prev;
+    unsigned long long start_time;
+    int x;
+    int y;
+}BOOM;
+
+typedef struct BOOMHead {
+    struct BOOM* next;
+} BOOMHead;
+
+
+//Bomb* makeBombHead();               //Bomb 구조체의 헤드 만들어서 반환
+//Bomb* getBombNode(int x, int y);    //Bomb 구조체 만들기
+//void insertBomb(Bomb* w);           //Bomb 구조체 배열에 Bomb w노드 삽입
+//void Bomb_TimeCheck();              //Bomb 이 터질시간이 되었는지 체크
+//void ﻿BombSwich_On(int x, int y);
+//void player_set_bomb();
+
+void TimeCheck();
+Bomb* getBombNode(int x, int y);
+void insertitem(Bomb* w);
+void PrintBomb();
+void ProcessKeyInput();
+void ﻿BombSwich_On(int x, int y);
+BombHead* init_List();
+void player_set_bomb();
+void TimeCheck_BOOM();
+#endif
+
+
+
+
+
+
+
+///main.c 수정사항
+#include <stdio.h>
+#include <Windows.h>
+#include <conio.h>
+#include <time.h>
+
+//#include "block.h"
+#include "map.h"
+#include "cursor.h"     //getcursor, setcursor 함수들을 파일로 따로 뺐음
+#include "player.h"
+#include "bomb.h"
+#include "Test_Moving.h"
+#include "calculatorDST.h"
+
+#include "debug.h"
+
+unsigned long long start_game_time;
+unsigned long long current_game_time;
+
+BombHead* bombHead1;
+BombHead* bombHead2;
+
+int player_item_range;
+
+extern BombHead* bombHead;
+extern BOOMHead* boomhead;
+
+extern int npcCurPosX, npcCurPosY;
+
+int main(void)
+{
+    RemoveCursor();
+
+    start_game_time = clock();
+    //bombHead1 = makeBombHead();
+    //bombHead2 = makeBombHead();
+
+    player_item_range = 1;
+
+
+    generateMap();
+    drawMaps();
+
+    PlayerState = 1;
+    PlayerCurPosX = get_Player_starting_point_x();
+    PlayerCurPosY = 8;  //get_Player_starting_point_y();
+
+    npcCurPosX = 2 * 2;
+    npcCurPosY = 2;
+
+    bombHead = (BombHead*)malloc(sizeof(bombHead));
+    bombHead->next = NULL;
+    boomhead = (BOOMHead*)malloc(sizeof(BOOMHead));
+    boomhead->next = NULL;
+    while (1)
+    {
+        current_game_time = clock();
+
+        TimeCheck();
+        TimeCheck_BOOM();
+        if (CheckPlayerState() == 1)
+            return (0);
+        if (CheckNPCState() == 1)
+            return (0);
+        Sleep(10);
+        PlayerControl();
+        if (CheckPlayerState() == 1)
+            return (0);
+        NpcMoving();
+        if (CheckNPCState() == 1)
+            return (0);
+
+        //print_npc_x_y();
+    }
+
+    return (0);
+}
+
+
+
+
+
+///bomb_2.c 수정사항
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+
+#include "bomb.h"
+#include "map.h"
+#include "define_state.h"
+
+//#include "debug.h"
+
+extern int mapModel[HEIGHT][WIDTH];
+extern int PlayerCurPosX; // 플레이어 현재 좌표 player.h 에서 선언
+extern int PlayerCurPosY; // 플레이어 현재 좌표 player.h 에서 선언
+
+extern int npcCurPosX;
+extern int npcCurPosY;
+
+unsigned long long cur_time;
+int bomb_max = 3;
+int bomb_len = 1;
+int GameOver = 0;
+int bomb_cur_count = 0;
+
+BombHead* bombHead;
+BOOMHead* boomhead;
+void TimeCheck();
+Bomb* getBombNode(int x, int y);
+void insertitem(Bomb* w);
+void PrintBomb();
+void ProcessKeyInput();
+void ﻿BombSwich_On(int x, int y);
+BombHead* init_List();
+
+
+
+Bomb* getBombNode(int x, int y) {
+    Bomb* newbomb = (Bomb*)malloc(sizeof(Bomb));
+    newbomb->prev = NULL;
+    newbomb->next = NULL;
+    newbomb->start_time = clock(); // 현재 시간으로 초기화
+    //newbomb->time = 0;
+    newbomb->x = x;
+    newbomb->y = y;
+    newbomb->len = bomb_len;
+    return newbomb;
+}
+
+void insertitem(Bomb* w) {
+    Bomb* curBomb = bombHead->next;
+
+    if (bombHead->next == NULL)
+    {
+        bombHead->next = w;
+    }
+    else
+    {
+        while (curBomb->next != NULL) {
+            //if (curBomb->x == w->x && curBomb->y == w->y) return //이미 물풍선이 있는 곳에 또 물풍선을 놓으려고 하면 리턴
+            curBomb = curBomb->next;
+        }
+        curBomb->next = w;
+        w->prev = curBomb;
+    }
+    set_Bomb(w->x, w->y); //물풍선 놓기.
+    bomb_cur_count++;
+}
+
+BOOM* getnode_BOOM(int x, int y, unsigned long long time) {
+    BOOM* newBOOM = (BOOM*)malloc(sizeof(BOOM));
+    newBOOM->start_time = time;
+    newBOOM->x = x;
+    newBOOM->y = y;
+    newBOOM->prev = NULL;
+    newBOOM->next = NULL;
+    return newBOOM;
+}
+
+void insertitem_BOOM(BOOM * w) {
+    if (boomhead->next == NULL) {
+        boomhead->next = w;
+        return;
+    }
+
+    BOOM* curBOOM = boomhead->next;
+    while (curBOOM->next != NULL) {
+        curBOOM = curBOOM->next;
+    }
+    curBOOM->next = w;
+    w->prev = curBOOM;
+}
+
+void PrintBomb() { //폭탄 배열 위치 출력하기
+    Bomb* curBomb = bombHead->next;
+    while (curBomb->next != NULL) {
+        printf("%d %d\n", curBomb->x, curBomb->y);
+        curBomb = curBomb->next;
+    }
+}
+
+void printBOOM() {
+    BOOM* curBOOM = boomhead->next;
+    if (curBOOM == NULL) return;
+
+    while (curBOOM != NULL) {
+        printf("%d %d\n", curBOOM->x, curBOOM->y);
+        curBOOM = curBOOM->next;
+    }
+}
+
+void ﻿BombSwich_On(int x, int y) {
+    unsigned long long time = clock();
+    bomb_cur_count--;
+    Bomb* curBomb = bombHead->next;
+    while (curBomb != NULL) {
+        if (curBomb->x == x && curBomb->y == y) {
+            //PBpmb = curBomb;
+            break;
+        }
+        curBomb = curBomb->next;
+    }
+
+    if (curBomb == NULL)
+        return;
+
+    //mapModel[curBomb->y][curBomb->x] == 0; //맵 정보 수정. 물풍선 있던 자리에 아무것도 출력하지 않음.
+
+    set_Bomb_Boom(curBomb->x, curBomb->y);
+    BOOM* w = getnode_BOOM(curBomb->x, curBomb->y, time);
+    insertitem_BOOM(w);
+    if (curBomb->prev == NULL)
+        bombHead->next = curBomb->next;
+    else
+        curBomb->prev->next = curBomb->next;
+    if (curBomb->next != NULL)
+        curBomb->next->prev = curBomb->prev;
+    int len = curBomb->len;
+    free(curBomb);
+    //printf("%d %d BOMB!!!\n", x, y);
+
+    for (int i = -len; i <= len; i++) { //폭탄이 터지는 범위 훑기
+
+
+        if (i == 0) continue;
+        int m = i + y;
+        int n = i + x;
+
+
+        //세로줄 확인
+
+        if (m < 0 || HEIGHT <= m)
+            ; //맵밖으로 벗어나면 continue  -> 가로줄 실행 안함        //이경빈이 만들 것 /////////////////////////////
+        else if (checkObject_can_go(x * 2 + GBOARD_ORIGIN_X, m + GBOARD_ORIGIN_Y) == STATE_BOX) {
+            set_Bomb_Boom(x, m);
+            w = getnode_BOOM(x, m, time);
+            insertitem_BOOM(w);
+        }
+        else if (checkObject_box(x * 2 + GBOARD_ORIGIN_X, m + GBOARD_ORIGIN_Y) == STATE_BOX) { //나무 상자라면
+            //mapModel[m][x] == 0; //나무 상자 파괴
+            set_Empty(x, m);
+            gernerate_Item(x * 2 + GBOARD_ORIGIN_X, m + GBOARD_ORIGIN_Y);
+
+            //여기에 아이템 랜덤 드랍 함수. to 경빈이에게
+        }
+        else if (mapModel[m][x] == STATE_ITEM_BOMB_MAX || mapModel[m][x] == STATE_ITEM_BOMB_RANGE || mapModel[m][x] == STATE_ITEM_CHARACTER_MOVE) { //아이템이 있다면
+            mapModel[m][x] = 0; //아이템 파괴
+        }
+        else if (mapModel[m][x] == STATE_BOMB_SETTING) { //만약 다른 폭탄이 있다면
+            ﻿BombSwich_On(x, m); //재귀호출
+        }
+        else
+            ;
+
+
+        //가로줄 확인
+        if (n < 0 || WIDTH <= n)
+            ; //맵밖으로 벗어나면 continue
+        else if (checkObject_can_go(n * 2 + GBOARD_ORIGIN_X, y + GBOARD_ORIGIN_Y) == STATE_BOX) {
+            set_Bomb_Boom(n, y);
+            w = getnode_BOOM(n, y, time);
+            insertitem_BOOM(w);
+        }
+        else if (mapModel[y][n] == STATE_BOX) { //나무 상자라면
+            mapModel[y][n] = 0; //나무 상자 파괴
+            //여기에 아이템 랜덤 드랍 함수. to 경빈이에게
+            set_Empty(n, y);
+            gernerate_Item(n * 2 + GBOARD_ORIGIN_X, y + GBOARD_ORIGIN_Y);
+        }
+        else if (mapModel[y][n] == STATE_ITEM_BOMB_MAX || mapModel[y][n] == STATE_ITEM_BOMB_RANGE || mapModel[y][n] == STATE_ITEM_CHARACTER_MOVE) { //아이템이 있다면
+            mapModel[y][n] = 0; //아이템 파괴
+        }
+        else if (mapModel[y][n] == 400) { //만약 다른 폭탄이 있다면
+            ﻿BombSwich_On(n, y); //재귀호출
+        }
+
+    }
+    //printBOOM();
+}
+
+void TimeCheck() {
+    Bomb* curBomb = bombHead->next;
+    if (curBomb == NULL)
+        return;
+
+    Bomb* tmpBomb;
+
+    while (curBomb != NULL) {
+        cur_time = clock();
+        tmpBomb = curBomb->next;
+        if (cur_time - curBomb->start_time >= 3000) { 
+            ﻿BombSwich_On(curBomb->x, curBomb->y);
+            break;
+        }
+        curBomb = tmpBomb;
+    }
+}
+
+void TimeCheck_BOOM() {
+    BOOM* curBOOM = boomhead->next;
+    if (curBOOM == NULL) return;
+    BOOM* tmpBOOM = curBOOM->next;
+    while (curBOOM != NULL) {
+        cur_time = clock();
+        tmpBOOM = curBOOM->next;
+        if (cur_time - curBOOM->start_time >= 1000) {
+            set_Empty(curBOOM->x, curBOOM->y);
+            if (curBOOM->prev == NULL)
+                boomhead->next = curBOOM->next;
+            else
+                curBOOM->prev->next = curBOOM->next;
+            if (curBOOM->next != NULL)
+                curBOOM->next->prev = curBOOM->prev;
+            free(curBOOM);
+            
+        }
+        curBOOM = tmpBOOM;
+    }
+}
+
+
+void player_set_bomb()
+{
+    Bomb* newbomb = getBombNode((PlayerCurPosX - GBOARD_ORIGIN_X) / 2, (PlayerCurPosY - GBOARD_ORIGIN_Y)); //x, y좌표의 새 폭탄 얻어옴.
+    insertitem(newbomb);
+}
+
+void npc_set_bomb()
+{
+    Bomb* newbomb = getBombNode((npcCurPosX - GBOARD_ORIGIN_X) / 2, (npcCurPosY - GBOARD_ORIGIN_Y)); //x, y좌표의 새 폭탄 얻어옴.
+    insertitem(newbomb);
+}
