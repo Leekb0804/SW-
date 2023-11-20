@@ -23,10 +23,10 @@ int dy[4] = { 1,0,-1,0 };
 int wx[4] = { 0,1,0,-1 };
 int wy[4] = { 1,0,-1,0 };
 
-int can_Pos = 0;
-int kill_Mode = 0;
+int can_Pos = 0; // 가장 많은 블럭을 부술 수 있는 위치
+int kill_Mode = 0; // 플레이어 만났을 때
 
-void dfs(int dstX, int dstY, int npcX, int npcY) {
+void dfs(int dstX, int dstY, int npcX, int npcY) { // 목적지에서 출발지 까지의 단 하나의 경로를 만들어줌
 
 	one_srt_dist[dstY][dstX] = 1;
 
@@ -108,7 +108,7 @@ void bfs(Queue* q, int x, int y) {
 	}
 }
 
-int ShortestDistance(int npcX, int npcY) {
+int ShortestDistance(int npcX, int npcY) { // 가장 짧은 경로를 구해줌 one_srt_dist 구해줌, 이 함수가 끝나면 one_srt_dist에 단 하나의 길만 표시가 된다
 
 	Queue* q = (Queue*)calloc(((WIDTH + 1) * (HEIGHT + 1)), sizeof(Queue));
 
