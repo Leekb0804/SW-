@@ -54,7 +54,7 @@ void SetCurrentCursorPos(int x, int y)
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-void drawMaps()		//¸ÊÀ» È­¸é¿¡ Ãâ·Â
+void drawMaps()		//Â¸ÃŠÃ€Â» ÃˆÂ­Â¸Ã©Â¿Â¡ ÃƒÃ¢Â·Ã‚
 {
 	int x, y;
 	int cursX, cursY;
@@ -69,11 +69,11 @@ void drawMaps()		//¸ÊÀ» È­¸é¿¡ Ãâ·Â
 
 			if (mapModel[y][x] == STATE_BOX)
 			{
-				printf("¡á");
+				printf("Â¡Ã¡");
 			}
 			else if (mapModel[y][x] == STATE_WALL)
 			{
-				printf("¢Ì");
+				printf("Â¢ÃŒ");
 			}
 			else { printf("  "); }
 		}
