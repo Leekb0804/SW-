@@ -26,7 +26,7 @@ void ShowPlayerBlock()
 	SetCurrentCursorPos(curPos.X, curPos.Y);
 	printf("  ");
 	SetCurrentCursorPos(curPos.X, curPos.Y);
-	printf("¢Ã");
+	printf("â–£");
 	SetCurrentCursorPos(curPos.X, curPos.Y);
 }
 
@@ -39,7 +39,7 @@ void DeletePlayerBlock()
 	if (checkObject_exist_bomb(curPos.X, curPos.Y) == 1)
 	{
 		SetCurrentCursorPos(curPos.X, curPos.Y);
-		printf("¢Á");
+		printf("âŠ™");
 		SetCurrentCursorPos(curPos.X, curPos.Y);
 	}
 	else
@@ -50,7 +50,7 @@ void DeletePlayerBlock()
 	}
 }
 
-void PlayerMoveLeft() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (ÁÂ)
+void PlayerMoveLeft() // í”Œë ˆì´ì–´ ì´ë™ (ì¢Œ)
 {
 	if (!DetectCollision(PlayerCurPosX - 2, PlayerCurPosY))
 	{
@@ -71,7 +71,7 @@ void PlayerMoveLeft() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (ÁÂ)
 	ShowPlayerBlock();
 }
 
-void PlayerMoveRight() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (¿ì)
+void PlayerMoveRight() // í”Œë ˆì´ì–´ ì´ë™ (ìš°)
 {
 	if (!DetectCollision(PlayerCurPosX + 2, PlayerCurPosY))
 	{
@@ -92,7 +92,7 @@ void PlayerMoveRight() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (¿ì)
 	ShowPlayerBlock();
 }
 
-void PlayerMoveDown() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (ÇÏ)
+void PlayerMoveDown() // í”Œë ˆì´ì–´ ì´ë™ (í•˜)
 {
 	if (!DetectCollision(PlayerCurPosX, PlayerCurPosY + 1))
 	{
@@ -113,7 +113,7 @@ void PlayerMoveDown() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (ÇÏ)
 	ShowPlayerBlock();
 }
 
-void PlayerMoveUp() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (»ó)
+void PlayerMoveUp() // í”Œë ˆì´ì–´ ì´ë™ (ìƒ)
 {
 	if (!DetectCollision(PlayerCurPosX, PlayerCurPosY - 1))
 	{
@@ -134,25 +134,25 @@ void PlayerMoveUp() // ÇÃ·¹ÀÌ¾î ÀÌµ¿ (»ó)
 	ShowPlayerBlock();
 }
 
-int DetectCollision(int posX, int posY) // ÀÓ½Ã·Î Àå¾Ö¹° GameBoardInfo·Î ¼³Á¤ÇÏ¿© °¨Áö
-{                              // ¸ÊÀÇ Àå¾Ö¹°¿¡ ¸ÂÃç °¨ÁöÇÏµµ·Ï ¹Ù²Ü ¿¹Á¤
+int DetectCollision(int posX, int posY) // ì„ì‹œë¡œ ì¥ì• ë¬¼ GameBoardInfoë¡œ ì„¤ì •í•˜ì—¬ ê°ì§€
+{                              // ë§µì˜ ì¥ì• ë¬¼ì— ë§ì¶° ê°ì§€í•˜ë„ë¡ ë°”ê¿€ ì˜ˆì •
 	int x, y;
 
 	return checkObject_can_go(posX, posY);
 }
 
-void SetPlayerBomb() // ÆøÅº³õ´Â ÇÔ¼ö
+void SetPlayerBomb() // í­íƒ„ë†“ëŠ” í•¨ìˆ˜
 {
-	// ÁÂÇ¥ (PlayerCurPosX, PlayerCurPosY)¿¡ ÆøÅº ³õ´Â ÇÔ¼ö
+	// ì¢Œí‘œ (PlayerCurPosX, PlayerCurPosY)ì— í­íƒ„ ë†“ëŠ” í•¨ìˆ˜
 	player_set_bomb();
 }
 
 int CheckPlayerState()
 {
-	// ÇöÀç ÇÃ·¹ÀÌ¾î ÁÂÇ¥ÀÇ Á¤º¸°ª¿¡ µû¶ó PlayerState ¾÷µ¥ÀÌÆ®
-	// ¾÷µ¥ÀÌÆ®µÈ PlayerState °ª¿¡ ¸Â°Ô Ã³¸®
+	// í˜„ì¬ í”Œë ˆì´ì–´ ì¢Œí‘œì˜ ì •ë³´ê°’ì— ë”°ë¼ PlayerState ì—…ë°ì´íŠ¸
+	// ì—…ë°ì´íŠ¸ëœ PlayerState ê°’ì— ë§ê²Œ ì²˜ë¦¬
 
-	////////////Ãß°¡
+	////////////ì¶”ê°€
 	if (checkObject_boom(PlayerCurPosX, PlayerCurPosY) == 1)
 	{
 		SetCurrentCursorPos(3, HEIGHT + GBOARD_ORIGIN_Y);
@@ -201,9 +201,8 @@ void ProcessKeyInput()
 			}
 			break;
 		case SPACE_BAR:
-			if (bomb_exist_count < bomb_max)
+			if (bomb_exist_count < bomb_max   && checkObject_exist_bomb(PlayerCurPosX, PlayerCurPosY) == 0)
 				SetPlayerBomb();
-			SetCurrentCursorPos(0, 13);
 			break;
 		default:
 			break;
@@ -211,7 +210,7 @@ void ProcessKeyInput()
 	}
 }
 
-void PlayerControl() // main ÇÔ¼ö¿¡ Ãß°¡ÇÏ¼¼¿ä
+void PlayerControl() // main í•¨ìˆ˜ì— ì¶”ê°€í•˜ì„¸ìš”
 {
 	SetCurrentCursorPos(PlayerCurPosX, PlayerCurPosY);
 	ShowPlayerBlock();
