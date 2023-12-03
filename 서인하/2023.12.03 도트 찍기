@@ -1,0 +1,476 @@
+
+/*define_state.h*/
+#define letter_WIDTH 32 //새 정의 변수
+#define letter_HEIGHT 20 //새 정의 변수
+#define letter 1 //새 정의 변수
+#define Empty 0 //새 정의 변수
+#define total_Maps 6 //새 정의 변수
+
+
+
+/*기존 변수, 함수, 정의 (추가할 필요X)*/
+#define GBOARD_ORIGIN_X 0
+#define GBOARD_ORIGIN_Y 0
+
+#include <stdio.h>
+#include <Windows.h>
+#include <time.h>
+
+int game_round = 0; //기존에 있던 게임 라운드 변수
+
+void SetCurrentCursorPos(int x, int y)
+{
+	COORD pos = { x, y };
+
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+
+
+/*map.h*/
+/*새로운 함수들
+상황에 따라 호출만 하면 됨.
+
+1. printf("Game Over")대신 GameOver_Mapdrawing();호출하기
+2. 다음 스테이지 넘어가는거 완성하면 NextStage_Mapdrawing();호출하고 그 안에 넘어가는 함수 호출하기
+3. 게임 클리어시 Clear_Letterdrawing(); 호출
+*/
+void draw_GameOver_letterMaps();
+void draw_NextStage_letterMaps();
+void draw_AllClear(int i);
+void GameOver_Mapdrawing(); //게임 오버할 때 호출
+void NextStage_Mapdrawing(); //다음 스테이지로 넘어갈때 호출
+void Clear_Letterdrawing(); //클리어할 때 호출
+
+
+
+/*map.c*/
+//새로운 맵들
+int GameOver_letter_map[letter_HEIGHT][letter_WIDTH] =
+{
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,letter,Empty,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,letter,Empty,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,letter,Empty,letter,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+};
+
+int Clear_letter_map[total_Maps][letter_HEIGHT][letter_WIDTH] =
+{
+	//1
+	{ {Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty},
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty }},
+
+
+	//2
+{ {Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty} },
+
+//3
+{ {Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,letter,letter,Empty,Empty,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,letter,Empty,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty} },
+
+
+//4
+{ {Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,letter,Empty,letter,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter},
+{letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,Empty,Empty,letter,letter,letter,letter,Empty,letter,letter,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty} },
+
+
+//5
+{ {Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,letter,letter,letter,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty},
+{letter,letter,letter,letter,Empty,letter,letter,letter,Empty,letter,letter,letter,letter,letter,letter,Empty,Empty,letter,Empty,letter,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter},
+{letter,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,Empty,letter,letter,Empty,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,Empty,letter,letter},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty} },
+
+
+{ {Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,letter,letter,letter,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty} }
+};
+
+int NextStage_letter_map[total_Maps][letter_HEIGHT][letter_WIDTH] =
+{
+	//stage 1
+	{
+	{Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty},
+	{ Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty },
+	{ Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,letter,letter,letter,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty },
+	{ Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty }
+	},
+
+
+	//stage2
+	{
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+	{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+	},
+
+
+	//stage3
+{
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+},
+
+
+//stage4
+{
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+},
+
+
+//stage 5
+{
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty},
+{Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty},
+{Empty,letter,Empty,letter,Empty,letter,letter,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,letter,Empty,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,letter,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,letter,Empty,letter,letter,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,letter,Empty,letter,Empty,Empty},
+{Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty},
+{Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+},
+
+{
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,letter,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,letter,letter,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,letter,letter,letter,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,Empty,Empty,letter,letter,letter,letter,letter,letter,letter,letter,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty},
+{Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty,Empty}
+}
+};
+
+
+void draw_GameOver_letterMaps()		//게임 오버 화면 출력
+{
+	int x, y;
+	int cursX, cursY;
+
+	for (y = 0; y < letter_HEIGHT; y++) {
+		for (x = 0; x < letter_WIDTH; x++)
+		{
+			cursX = x * 2 + GBOARD_ORIGIN_X; /*GBOARD_ORIGIN_X*/;
+			cursY = y + GBOARD_ORIGIN_Y; /*GBOARD_ORIGIN_Y*/;
+
+			SetCurrentCursorPos(cursX, cursY);
+
+			if (GameOver_letter_map[y][x] == letter)
+			{
+				printf("■");
+			}
+			else { printf("  "); }
+		}
+	}
+	SetCurrentCursorPos((GBOARD_ORIGIN_X/*BOARD_ORIGIN_X*/ + letter_WIDTH * 2 + 1), letter_HEIGHT + 1);
+}
+
+void draw_NextStage_letterMaps()		//다음 스테이지 화면 출력
+{
+	int x, y;
+	int cursX, cursY;
+
+	for (y = 0; y < letter_HEIGHT; y++) {
+		if (y>=8)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);
+		for (x = 0; x < letter_WIDTH; x++)
+		{
+			cursX = x * 2 + GBOARD_ORIGIN_X; /*GBOARD_ORIGIN_X*/;
+			cursY = y + GBOARD_ORIGIN_Y; /*GBOARD_ORIGIN_Y*/;
+
+			SetCurrentCursorPos(cursX, cursY);
+
+			if (NextStage_letter_map[game_round][y][x] == letter)
+			{
+				printf("■");
+			}
+			else { printf("  "); }
+		}
+	}
+	Sleep(3000);
+	//여기에 다음 스테이지로 넘어가는 함수 호출
+}
+
+void draw_AllClear(int i) { //클리어 화면 출력
+	int x, y;
+	int cursX, cursY;
+
+	for (y = 0; y < letter_HEIGHT; y++) {
+		for (x = 0; x < letter_WIDTH; x++)
+		{
+			cursX = x * 2 + GBOARD_ORIGIN_X; /*GBOARD_ORIGIN_X*/;
+			cursY = y + GBOARD_ORIGIN_Y; /*GBOARD_ORIGIN_Y*/;
+
+			SetCurrentCursorPos(cursX, cursY);
+
+			if (Clear_letter_map[i][y][x] == letter)
+			{
+				printf("■");
+			}
+			else { printf("  "); }
+		}
+	}
+	SetCurrentCursorPos((GBOARD_ORIGIN_X/*BOARD_ORIGIN_X*/ + letter_WIDTH * 2 + 1), letter_HEIGHT + 1);
+}
+
+void GameOver_Mapdrawing() {
+	int a = 12;
+	int b = 15;
+	SetCurrentCursorPos(0, letter_HEIGHT + 1);
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), b);
+	printf("Player Score = %d"); //최종 플레이어 점수 넣기
+	while (1) {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), a);
+		draw_GameOver_letterMaps();
+		Sleep(1000); //1초마다 색깔 바꾸기
+		if (a == 12) a = 15;
+		else a = 12;
+	}
+}
+
+void NextStage_Mapdrawing() {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+	draw_NextStage_letterMaps();
+}
+
+void Clear_Letterdrawing() {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 9);
+	for (int i = 0; i < 5; i++) { //폭죽 터지는 애니메이션
+		draw_AllClear(i);
+		Sleep(800); //0.8초의 딜레이
+	}
+	int a = 10;
+	int b = 15;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), b);
+	while (1) {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), a);
+		draw_AllClear(5);
+		Sleep(1000); //클리어 메세지 색깔 1초마다 바꾸기
+		if (a == 10) a = 15;
+		else a = 10;
+	}
+}
+
+
+/*실험용 (추가X)*/
+int main() {
+	//GameOver_Mapdrawing(); //게임오버할때 같이 호출.
+	//NextStage_Mapdrawing(); //스테이지 표시 맵
+	Clear_Letterdrawing(); //게임 마무리할때 ALL Clear 표시
+}
